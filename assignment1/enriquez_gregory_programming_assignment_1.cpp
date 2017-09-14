@@ -1,0 +1,178 @@
+/* Gregory Enriquez */
+
+/*
+  Compiled on Mac OSX with:
+  gcc -Wno-deprecated-declarations  -o enriquez_gregory_programming_assignment_1  enriquez_gregory_programming_assignment_1.cpp  -framework GLUT -framework OpenGL -framework Cocoa -lm
+*/
+
+#ifdef __APPLE__
+  #include <OpenGL/gl.h>
+  #include <OpenGL/glu.h>
+  #include <GLUT/glut.h>
+#elif __linux__
+  #include <GL/glut.h>
+#endif
+#include <math.h>
+#include <time.h>
+#include <stdlib.h>
+
+/*  Set initial size of the display window.  */
+GLsizei winWidth = 500, winHeight = 500;  
+
+/*  Set limits for the rectangular area in complex plane.  */
+GLfloat xComplexMin = -2.00, xComplexMax = 0.50;  
+GLfloat yComplexMin = -1.25, yComplexMax = 1.25;
+
+GLfloat complexWidth = xComplexMax - xComplexMin;
+GLfloat complexHeight = yComplexMax - yComplexMin;
+
+class complexNum {
+   public:
+      GLfloat x, y;
+};
+
+struct color { GLfloat r, g, b; };
+
+void init (void)
+{
+   /*  Set display-window color to white.  */
+   glClearColor (1.0, 1.0, 1.0, 0.0); 
+}
+
+void plotPoint (complexNum z)
+{
+   glBegin (GL_POINTS);
+      glVertex2f (z.x, z.y);
+   glEnd ( );
+}
+
+/*  Calculate the square of a complex number.  */
+complexNum complexSquare (complexNum z)
+{
+   complexNum zSquare;
+
+   zSquare.x = z.x * z.x - z.y * z.y;
+   zSquare.y = 2 * z.x * z.y;
+   return zSquare;
+}
+
+GLint mandelSqTransf (complexNum z0, GLint maxIter)
+{
+   complexNum z = z0;
+   GLint count = 0;
+
+   /*  Quit when z * z > 4  */
+   while ((z.x * z.x + z.y * z.y <= 4.0) && (count < maxIter)) {
+      z = complexSquare (z);
+      z.x += z0.x;
+      z.y += z0.y;
+      count++;
+   }
+   return count;
+}
+
+void mandelbrot (GLint nx, GLint ny, GLint maxIter)
+{
+   complexNum z, zIncr;
+   color ptColor;
+
+   GLint iterCount;
+
+   zIncr.x =  complexWidth / GLfloat (nx);
+   zIncr.y =  complexHeight / GLfloat (ny);
+
+   for (z.x = xComplexMin;  z.x < xComplexMax;  z.x += zIncr.x)
+      for (z.y = yComplexMin;  z.y < yComplexMax;  z.y += zIncr.y) {
+         iterCount = mandelSqTransf (z, maxIter);
+         if (iterCount >= maxIter) {
+            /*  Set point color to pink.  */
+            ptColor.r = 1.0;
+            ptColor.g = 0.0;
+            ptColor.b = 1.0;
+         }
+            else if (iterCount > (maxIter / 8)) {
+                    /*  Set point color to purple.  */
+                    ptColor.r = 0.3;
+                    ptColor.g = 0.0;
+                    ptColor.b = 0.3;
+               }       
+                 else if (iterCount > (maxIter / 10)) {
+                          /*  Set point color to light pink.  */
+                          ptColor.r = 1.0;
+                          ptColor.g = 0.7;
+                          ptColor.b = 1.0;
+                      }
+                      else if (iterCount > (maxIter /20)) {
+                              /*  Set point color to matte green.  */
+                              ptColor.b = 0.5;
+                              ptColor.r = 1.0;
+                              ptColor.g = 0.5;
+                           }
+                           else if (iterCount > (maxIter / 40)) {
+                                   /*  Set point color to dark purple.  */
+                                   ptColor.r = 0.2;
+                                   ptColor.g = 0.0;
+                                   ptColor.b = 0.2;
+                                }
+                                else if (iterCount > (maxIter / 100)) {
+                                        /*  Set point color to fuschia.  */
+                                        ptColor.r = 1.0;
+                                        ptColor.b = 0.3;
+                                        ptColor.g = 1.0;
+                                     }
+
+                                     else {
+                                           /*  Set fill color to dark jungle green.  */
+                                           ptColor.r = 0.0;
+                                           ptColor.g = 0.1;
+                                           ptColor.b = 0.1;
+                                     }
+         /*  Plot the color point.  */
+         glColor3f (ptColor.r, ptColor.g, ptColor.b);
+         plotPoint (z);
+    }
+}
+
+void displayFcn (void)
+{
+   /*  Set number of x and y subdivisions and the max iterations.  */
+   GLint nx = 1000, ny = 1000, maxIter = 1000;
+
+   glClear (GL_COLOR_BUFFER_BIT);   //  Clear display window.
+
+   mandelbrot (nx, ny, maxIter);
+   glFlush ( );
+}
+
+void winReshapeFcn (GLint newWidth, GLint newHeight)
+{
+   /*  Maintain an aspect ratio of 1.0, assuming that
+    *  complexWidth = complexHeight.
+    */
+   glViewport (0, 0, newHeight, newHeight);
+
+   glMatrixMode (GL_PROJECTION);
+   glLoadIdentity ( );
+
+   gluOrtho2D (xComplexMin, xComplexMax, yComplexMin, yComplexMax);
+
+   glClear (GL_COLOR_BUFFER_BIT);
+}
+
+int main (int argc, char** argv)
+{
+   glutInit (&argc, argv);
+   glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB);
+   glutInitWindowPosition (50, 50);
+   glutInitWindowSize (winWidth, winHeight);
+   glutCreateWindow ("Mandelbrot Set");
+
+   init ( );
+   glutDisplayFunc (displayFcn);
+   glutReshapeFunc (winReshapeFcn);
+
+   glutMainLoop ( );
+   return 0;
+}
+
+

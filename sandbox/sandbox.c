@@ -13,6 +13,7 @@
   #include <GL/glut.h>
 #endif
 #include <math.h>
+#include <time.h>
 float camera_angle_degrees = 0;
 
 
@@ -23,8 +24,8 @@ float camera_angle_degrees = 0;
 #define RIGHT_MOUSE_BUTTON 3
 
 
-GLsizei x_offset = 0, y_offset = 0, z_offset = 0;
-GLsizei x_light_pos = 0, y_light_pos = 0, z_light_pos = 0;
+GLsizei cam_pos_x = 0, cam_pos_y = 0, cam_pos_z = 0;
+GLsizei light_pos_x = 0, light_pos_y = 0, light_pos_z = 0;
 GLsizei cir_offset = 0;
 GLsizei speed = 5;
 
@@ -49,6 +50,9 @@ void init (void)
   glLightfv (GL_LIGHT1,GL_AMBIENT, (GLfloat *) &lightAmbient1);
   glLightfv (GL_LIGHT1,GL_DIFFUSE, (GLfloat *) &lightDiffuse1);
   glLightModeli (GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+  time_t t;
+  srand((unsigned) time(&t));
 }
 
 
@@ -83,27 +87,30 @@ void display (void)
   }
   else
   {
-    camera_angle_degrees = cir_offset * speed;
-    // camera_angle_degrees = camera_angle_degrees + 1.0f;
+    // camera_angle_degrees = cir_offset * speed;
+    camera_angle_degrees = camera_angle_degrees + 1.0f;
   }
   camera_angle_radians = camera_angle_degrees * M_PI / 180.0f;
   camera_position_x = sin(camera_angle_radians) * 6.0f + 6.0f;
   camera_position_y = -6.0f;
-  camera_position_z = z_offset + cos(camera_angle_radians) * 6.0f - 4.50f;
+  camera_position_z = cam_pos_z + cos(camera_angle_radians) * 6.0f - 4.50f;
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity ();
   gluLookAt (camera_position_x, camera_position_y, camera_position_z, center_x, center_y, center_z, 0.0f, 1.0f, 0.0f); // move camera
 
   glPushMatrix ();
   glTranslatef (red_sphere_position_x, red_sphere_position_y, red_sphere_position_z);
-  glColor3f (1.0f, 1.0f, 1.0f);
-  // glBegin(GL_POLYGON);
-  //   glVertex3f(-0.25f, 0.25f, 0.0f); // vertex 1
-  //   glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
-  //   glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
-  //   glVertex3f(1.0f, -1.0f, 0.0f);
-  // glEnd();
-  glutSolidTeapot(sphere_radius);
+  glColor3f (1.0f, 0.0f, 1.0f);
+  glBegin(GL_POLYGON);
+    // (float) (rand() / 3.0f)
+    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    // glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
+    // glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
+    // glVertex3f(1.0f, -1.0f, 0.0f);
+  glEnd();
+  // glutSolidTeapot(sphere_radius);
   // glutSolidSphere (sphere_radius, 50, 50);
   glPopMatrix ();
 
@@ -124,7 +131,7 @@ void display (void)
   glPopMatrix ();
 
   // GLfloat lightPos1[4]     = {camera_position_x, camera_position_y, camera_position_z, 0.0};
-  GLfloat lightPos1[4]     = {x_light_pos, y_light_pos, z_light_pos, 0.0};
+  GLfloat lightPos1[4]     = {light_pos_x, light_pos_y, light_pos_z, 0.0};
   glLightfv (GL_LIGHT1,GL_POSITION, (GLfloat *) &lightPos1);
 
   glutSwapBuffers();
@@ -205,19 +212,19 @@ void keyboard (unsigned char key, int x, int y)
       break;
     case 'w':
       printf("Key input: %c\n", key);
-      z_light_pos -= 1.0;
+      light_pos_z -= 1.0;
       break;
     case 'a':
       printf("Key input: %c\n", key);
-      x_light_pos += 1.0;
+      light_pos_x += 1.0;
       break;
     case 's':
       printf("Key input: %c\n", key);
-      z_light_pos += 1.0;
+      light_pos_z += 1.0;
       break;
     case 'd':
       printf("Key input: %c\n", key);
-      x_light_pos -= 1.0;
+      light_pos_x -= 1.0;
       break;
     default:
     break;
@@ -230,13 +237,13 @@ void arrow_keys (int key, int x, int y)
   switch (key)
   {
     case GLUT_KEY_UP:
-      z_offset -= 1;
-      printf("GLUT_KEY_UP z_offset = %d\n", z_offset);
+      cam_pos_z -= 1;
+      printf("GLUT_KEY_UP cam_pos_z = %d\n", cam_pos_z);
       glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
-      z_offset += 1;
-      printf("GLUT_KEY_DOWN z_offset = %d\n", z_offset);
+      cam_pos_z += 1;
+      printf("GLUT_KEY_DOWN cam_pos_z = %d\n", cam_pos_z);
       glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:

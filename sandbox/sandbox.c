@@ -24,6 +24,7 @@ float camera_angle_degrees = 0;
 
 
 GLsizei x_offset = 0, y_offset = 0, z_offset = 0;
+GLsizei x_light_pos = 0, y_light_pos = 0, z_light_pos = 0;
 GLsizei cir_offset = 0;
 GLsizei speed = 5;
 
@@ -82,8 +83,8 @@ void display (void)
   }
   else
   {
-    // camera_angle_degrees = cir_offset * speed;
-    camera_angle_degrees = camera_angle_degrees + 1.0f;
+    camera_angle_degrees = cir_offset * speed;
+    // camera_angle_degrees = camera_angle_degrees + 1.0f;
   }
   camera_angle_radians = camera_angle_degrees * M_PI / 180.0f;
   camera_position_x = sin(camera_angle_radians) * 6.0f + 6.0f;
@@ -96,13 +97,13 @@ void display (void)
   glPushMatrix ();
   glTranslatef (red_sphere_position_x, red_sphere_position_y, red_sphere_position_z);
   glColor3f (1.0f, 1.0f, 1.0f);
-  glBegin(GL_POLYGON);
-  glVertex3f(-0.25f, 0.25f, 0.0f); // vertex 1
-  glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
-  glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
-  glVertex3f(1.0f, -1.0f, 0.0f);
-  glEnd();
-  // glutSolidTeapot(sphere_radius);
+  // glBegin(GL_POLYGON);
+  //   glVertex3f(-0.25f, 0.25f, 0.0f); // vertex 1
+  //   glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
+  //   glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
+  //   glVertex3f(1.0f, -1.0f, 0.0f);
+  // glEnd();
+  glutSolidTeapot(sphere_radius);
   // glutSolidSphere (sphere_radius, 50, 50);
   glPopMatrix ();
 
@@ -121,6 +122,10 @@ void display (void)
   glutSolidTeapot(sphere_radius);
   // glutSolidSphere (sphere_radius, 50, 50);
   glPopMatrix ();
+
+  // GLfloat lightPos1[4]     = {camera_position_x, camera_position_y, camera_position_z, 0.0};
+  GLfloat lightPos1[4]     = {x_light_pos, y_light_pos, z_light_pos, 0.0};
+  glLightfv (GL_LIGHT1,GL_POSITION, (GLfloat *) &lightPos1);
 
   glutSwapBuffers();
   glutPostRedisplay();
@@ -141,7 +146,7 @@ void reshape (int w, int h)
   }
   else
   {
-    gluPerspective (80, (float) w / (float) h, 1.0, 5000.0);
+    gluPerspective (80, (float) w / (float) h, 1.0, 5000.0); // near and far clipping planes
   }
   glMatrixMode (GL_MODELVIEW);  
   glLoadIdentity (); 
@@ -191,14 +196,33 @@ void mouse (int mouse_button, int state, int x, int y)
 
 void keyboard (unsigned char key, int x, int y)
 {
+
+  // printf("Key input: %c\n", key);
   switch (key)
   {
     case 27:
       exit (0);
-    break;
+      break;
+    case 'w':
+      printf("Key input: %c\n", key);
+      z_light_pos -= 1.0;
+      break;
+    case 'a':
+      printf("Key input: %c\n", key);
+      x_light_pos += 1.0;
+      break;
+    case 's':
+      printf("Key input: %c\n", key);
+      z_light_pos += 1.0;
+      break;
+    case 'd':
+      printf("Key input: %c\n", key);
+      x_light_pos -= 1.0;
+      break;
     default:
     break;
   }
+
 }
 
 void arrow_keys (int key, int x, int y)
@@ -357,7 +381,7 @@ int main (int argc, char *argv[])
   glutInitDisplayMode (GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
   glutInitWindowSize (1280, 720 ); 
   glutInitWindowPosition (0, 0);
-  window = glutCreateWindow ("Rotating Camera Demonstration");
+  window = glutCreateWindow ("Flying Camera Demo");
   init ();
   glutDisplayFunc (display);  
   glutReshapeFunc (reshape);

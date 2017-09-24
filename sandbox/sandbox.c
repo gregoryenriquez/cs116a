@@ -14,7 +14,6 @@
 #endif
 #include <math.h>
 #include <time.h>
-float camera_angle_degrees = 0;
 
 
 #define X_RESOLUTION 640 
@@ -22,15 +21,27 @@ float camera_angle_degrees = 0;
 #define LEFT_MOUSE_BUTTON 1
 #define MIDDLE_MOUSE_BUTTON 2
 #define RIGHT_MOUSE_BUTTON 3
+#define DEBUG_PRINT 1
 
-
-GLsizei cam_pos_x = 0, cam_pos_y = 0, cam_pos_z = 0;
+float camera_angle_degrees = -11;
+float camera_position_x = 14, camera_position_y = 7.0f, camera_position_z = -2.0f;
+float center_x = 4, center_y = 2, center_z = 5;
+float tea_angle = 0;
+float tea_radians = 0;
+// GLsizei cam_pos_x = 0, cam_pos_y = -8, cam_pos_z = -7;
 GLsizei light_pos_x = 0, light_pos_y = 0, light_pos_z = 0;
 GLsizei cir_offset = 0;
 GLsizei speed = 5;
+const GLsizei MAX_LENGTH = 100;
+const GLsizei MAX_HEIGHT = 2;
+const GLsizei MAX_DEPTH = 100;
+GLsizei terrain[MAX_LENGTH][MAX_DEPTH];
+
+void printCoords();
 
 void init (void)
 {
+
   glShadeModel (GL_SMOOTH);
   glClearColor (1.0f, 1.0f, 1.0f, 0.0f);        
   glClearDepth (1.0f);
@@ -53,20 +64,44 @@ void init (void)
 
   time_t t;
   srand((unsigned) time(&t));
+
+  // glPushMatrix ();
+  // glTranslatef (0, 0, 0);
+  // glColor3f (1.0f, 0.0f, 1.0f);
+  // glBegin(GL_LINES);
+  //   GLsizei x = 0, y = 0, z = 0;
+  GLsizei z_max = MAX_DEPTH;
+  GLsizei x_max = MAX_LENGTH;
+  GLsizei y_max = MAX_HEIGHT;
+  for (GLsizei i = 0; i < x_max; i++) {
+    for (GLsizei j = 0; j < z_max; j++) {
+      terrain[i][j] = rand() % 2;
+    }
+  }
+
+    // (float) (rand() / 3.0f)
+    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+    // glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
+    // glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
+    // glVertex3f(1.0f, -1.0f, 0.0f);
+  glEnd();
+  // glutSolidTeapot(sphere_radius);
+  // glutSolidSphere (sphere_radius, 50, 50);
+  glPopMatrix ();
+  gluLookAt (0, -8, -7, 0, 0, 0, 0.0f, 1.0f, 0.0f); // move camera
 }
 
 
 void display (void)
 {
-
-
   float sphere_radius;
   float red_sphere_position_x, red_sphere_position_y, red_sphere_position_z;
   float green_sphere_position_x, green_sphere_position_y, green_sphere_position_z;
   float blue_sphere_position_x, blue_sphere_position_y, blue_sphere_position_z;
-  float camera_position_x, camera_position_y, camera_position_z;
-  float center_x, center_y, center_z;
-  float camera_angle_radians;
+
+  float camera_angle_radians = 0;
 
   sphere_radius = 1.0;
   red_sphere_position_y = -6.0f;
@@ -78,37 +113,78 @@ void display (void)
   green_sphere_position_z = -5.0f;
   blue_sphere_position_x = 7.0f;
   blue_sphere_position_z = -5.0f;
-  center_x = (red_sphere_position_x + green_sphere_position_x + blue_sphere_position_x) / 3.0f;
-  center_y = -6.0f;
-  center_z = (red_sphere_position_z + green_sphere_position_z + blue_sphere_position_z) / 3.0f;
+  // center_x = (red_sphere_position_x + green_sphere_position_x + blue_sphere_position_x) / 3.0f;
+  // center_y = -6.0f;
+  // center_z = (red_sphere_position_z + green_sphere_position_z + blue_sphere_position_z) / 3.0f;
+  if (tea_angle >= 360.0f) {
+    tea_angle = 0;
+  } else {
+    tea_angle = tea_angle + 1.0f;
+  }
+  tea_radians = tea_angle * M_PI / 180.0f;
+
+
   if (camera_angle_degrees >= 360.0f)
   {
     camera_angle_degrees = 0;
   }
-  else
-  {
-    // camera_angle_degrees = cir_offset * speed;
-    camera_angle_degrees = camera_angle_degrees + 1.0f;
-  }
+  // else
+  // {
+  //   camera_angle_degrees = camera_angle_degrees + 1.0f;
+  // }
   camera_angle_radians = camera_angle_degrees * M_PI / 180.0f;
-  camera_position_x = sin(camera_angle_radians) * 6.0f + 6.0f;
-  camera_position_y = -6.0f;
-  camera_position_z = cam_pos_z + cos(camera_angle_radians) * 6.0f - 4.50f;
+  // camera_position_x = sin(camera_angle_radians) * 6.0f + 6.0f;
+  
+  // camera_position_x = cam_pos_x;
+  // camera_position_y = cam_pos_y;
+  // camera_position_z = cam_pos_z;
+  // camera_position_y = 0.0f;    
+  // // camera_position_y = -6.0f;
+
+
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity ();
-  gluLookAt (camera_position_x, camera_position_y, camera_position_z, center_x, center_y, center_z, 0.0f, 1.0f, 0.0f); // move camera
+  GLsizei x = sin(camera_angle_radians) * 50.0f + camera_position_x;
+  GLsizei y = camera_position_y;
+  GLsizei z = camera_position_z;
+  gluLookAt ( x, 
+              y, 
+              z, 
+              center_x, center_y, center_z, 0.0f, 1.0f, 0.0f
+
+              ); // move camera
+  // gluLookAt ( sin(camera_angle_radians) * 6.0f + camera_position_x, 
+  //             camera_position_y, 
+  //             cos(camera_angle_radians) * 6.0f + camera_position_z, 
+  //             0, 0, 0, 0.0f, 1.0f, 0.0f
+
+  //             ); // move camera
+  // gluLookAt(cam_pos_x, cam_pos_y, cam_pos_z, center_x, center_y, center_z, 0.0f, 1.0f, 0.0f);
 
   glPushMatrix ();
-  glTranslatef (red_sphere_position_x, red_sphere_position_y, red_sphere_position_z);
+  glTranslatef (0, 0, 0);
   glColor3f (1.0f, 0.0f, 1.0f);
-  glBegin(GL_POLYGON);
-    // (float) (rand() / 3.0f)
-    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    // glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
-    // glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
-    // glVertex3f(1.0f, -1.0f, 0.0f);
+
+  // glBegin(GL_LINE_STRIP);  
+  glBegin(GL_LINES);
+    for (GLsizei j = 1; j < MAX_DEPTH - 1; j++) {
+        for (GLsizei i = 1; i < MAX_LENGTH - 1; i++) {
+            glVertex3f(i, terrain[i][j], j);
+            glVertex3f(i+1, terrain[i+1][j], j);
+            glVertex3f(i, terrain[i][j], j);
+            glVertex3f(i+1, terrain[i+1][j+1], j+1);
+            glVertex3f(i, terrain[i][j], j);
+            glVertex3f(i, terrain[i][j+1], j+1);
+        }
+    }
+
+  //   // (float) (rand() / 3.0f)
+  //   // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+  //   // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+  //   // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
+  //   // glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
+  //   // glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
+  //   // glVertex3f(1.0f, -1.0f, 0.0f);
   glEnd();
   // glutSolidTeapot(sphere_radius);
   // glutSolidSphere (sphere_radius, 50, 50);
@@ -116,7 +192,9 @@ void display (void)
 
   glPushMatrix ();
   // glRotated(camera_angle_degrees * 2, 0, 0, 0);
-  glTranslatef (green_sphere_position_x, green_sphere_position_y, green_sphere_position_z);
+  glTranslatef (center_x, center_y, center_z);
+  glRotatef(tea_angle, 0, 1, 0);
+  glTranslatef (0, 0, 0);
   glColor3f (0.0f, 1.0f, 0.0f);
   glutSolidTeapot(sphere_radius);
 
@@ -124,7 +202,7 @@ void display (void)
   glPopMatrix ();
 
   glPushMatrix ();
-  glTranslatef (blue_sphere_position_x, blue_sphere_position_y, blue_sphere_position_z);
+  glTranslatef (0, 0, 0);
   glColor3f (0.0f, 0.0f, 1.0f);
   glutSolidTeapot(sphere_radius);
   // glutSolidSphere (sphere_radius, 50, 50);
@@ -161,70 +239,41 @@ void reshape (int w, int h)
 
 void mouse (int mouse_button, int state, int x, int y)
 {
-  if (x < 20)
-  {
-    x = 20;
-  }
-  if (x > (X_RESOLUTION - 20))
-  {
-    x = X_RESOLUTION - 20;
-  }
-  if (y < 20)
-  {
-    y = 20;
-  }
-  if (y > (Y_RESOLUTION - 20))
-  {
-    y = Y_RESOLUTION - 20;
-  }
-  if ((mouse_button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-  {
-    // last_mouse_button_pressed = LEFT_MOUSE_BUTTON;
-    // left_mouse_button_x = x;
-    // left_mouse_button_y = y;
-    // glutPostRedisplay ();
-  }
-  if ((mouse_button == GLUT_MIDDLE_BUTTON) && (state == GLUT_DOWN))
-  {
-    // last_mouse_button_pressed = MIDDLE_MOUSE_BUTTON;
-    // middle_mouse_button_x = x;
-    // middle_mouse_button_y = y;
-    // glutPostRedisplay ();
-  }
-  if ((mouse_button == GLUT_RIGHT_BUTTON) && (state == GLUT_DOWN))
-  {
-    // last_mouse_button_pressed = RIGHT_MOUSE_BUTTON;
-    // right_mouse_button_x = x;
-    // right_mouse_button_y = y;
-    // glutPostRedisplay ();
-  }
+
 }
 
 
 void keyboard (unsigned char key, int x, int y)
 {
 
-  // printf("Key input: %c\n", key);
+  #if DEBUG_PRINT
+    printCoords();
+  #endif DEBUG_PRINT
+
   switch (key)
   {
     case 27:
       exit (0);
       break;
     case 'w':
-      printf("Key input: %c\n", key);
-      light_pos_z -= 1.0;
+      camera_position_z++;
+      center_z++;
+      glutPostRedisplay();
       break;
     case 'a':
-      printf("Key input: %c\n", key);
-      light_pos_x += 1.0;
+      camera_position_x++;
+      center_x++;
+      glutPostRedisplay();
       break;
     case 's':
-      printf("Key input: %c\n", key);
-      light_pos_z += 1.0;
+      camera_position_z--;
+      center_z--;
+      glutPostRedisplay();
       break;
     case 'd':
-      printf("Key input: %c\n", key);
-      light_pos_x -= 1.0;
+      camera_position_x--;
+      center_x--;
+      glutPostRedisplay();
       break;
     default:
     break;
@@ -234,150 +283,41 @@ void keyboard (unsigned char key, int x, int y)
 
 void arrow_keys (int key, int x, int y)
 {
+
+  #if DEBUG_PRINT
+    printCoords();
+  #endif DEBUG_PRINT
+
   switch (key)
   {
     case GLUT_KEY_UP:
-      cam_pos_z -= 1;
-      printf("GLUT_KEY_UP cam_pos_z = %d\n", cam_pos_z);
+      camera_position_y++;
+      center_y++;
       glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
-      cam_pos_z += 1;
-      printf("GLUT_KEY_DOWN cam_pos_z = %d\n", cam_pos_z);
+      camera_position_y--;
+      center_y--;
       glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
-      cir_offset += 1;
-      printf("GLUT_KEY_LEFT cir_offset = %d\n", cir_offset);
+      camera_angle_degrees--;
       glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
-      cir_offset -= 1;
-      printf("GLUT_KEY_RIGHT cir_offset = %d\n", cir_offset);
+      camera_angle_degrees++;
       glutPostRedisplay();
       break;
     default:
       break;
-
   }
-
-  // switch (key)
-  // {
-  //   case GLUT_KEY_UP:
-  //     switch (last_mouse_button_pressed)
-  //     {
-  //       case LEFT_MOUSE_BUTTON:
-  //         if (left_mouse_button_y >= 20)
-  //         {
-  //           left_mouse_button_y--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case MIDDLE_MOUSE_BUTTON:
-  //         if (middle_mouse_button_y >= 20)
-  //         {
-  //           middle_mouse_button_y--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case RIGHT_MOUSE_BUTTON:
-  //         if (right_mouse_button_y >= 20)
-  //         {
-  //           right_mouse_button_y--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       default:
-  //       break;
-  //     }
-  //   break;
-  //   case GLUT_KEY_DOWN:
-  //     switch (last_mouse_button_pressed)
-  //     {
-  //       case LEFT_MOUSE_BUTTON:
-  //         if (left_mouse_button_y < Y_RESOLUTION - 20)
-  //         {
-  //           left_mouse_button_y++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case MIDDLE_MOUSE_BUTTON:
-  //         if (middle_mouse_button_y < Y_RESOLUTION - 20)
-  //         {
-  //           middle_mouse_button_y++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case RIGHT_MOUSE_BUTTON:
-  //         if (right_mouse_button_y < Y_RESOLUTION - 20)
-  //         {
-  //           right_mouse_button_y++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       default:
-  //       break;
-  //     }
-  //   break;
-  //   case GLUT_KEY_LEFT:
-  //     switch (last_mouse_button_pressed)
-  //     {
-  //       case LEFT_MOUSE_BUTTON:
-  //         if (left_mouse_button_x > 20)
-  //         {
-  //           left_mouse_button_x--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case MIDDLE_MOUSE_BUTTON:
-  //         if (middle_mouse_button_x > 20)
-  //         {
-  //           middle_mouse_button_x--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case RIGHT_MOUSE_BUTTON:
-  //         if (right_mouse_button_x > 20)
-  //         {
-  //           right_mouse_button_x--;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       default:
-  //       break;
-  //     }
-  //   break;
-  //   case GLUT_KEY_RIGHT:
-  //     switch (last_mouse_button_pressed)
-  //     {
-  //       case LEFT_MOUSE_BUTTON:
-  //         if (left_mouse_button_x < X_RESOLUTION - 20)
-  //         {
-  //           left_mouse_button_x++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case MIDDLE_MOUSE_BUTTON:
-  //         if (middle_mouse_button_x < X_RESOLUTION - 20)
-  //         {
-  //           middle_mouse_button_x++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //       case RIGHT_MOUSE_BUTTON:
-  //         if (right_mouse_button_x < X_RESOLUTION - 20)
-  //         {
-  //           right_mouse_button_x++;
-  //           glutPostRedisplay ();
-  //         }
-  //       break;
-  //     }
-  //   break;
-  //   default:
-  //   break;
-  // }
 }
 
+void printCoords() {
+  printf("D/Camera - X: %.2f Y: %.2f Z: %.2f theta: %.2f tea-angle: %.2f Center - X: %.2f Y: %.2f Z: %.2f\n", 
+    camera_position_x, camera_position_y, camera_position_z, camera_angle_degrees, tea_angle, center_x, center_y,
+    center_z); 
+}
 
 
 int main (int argc, char *argv[]) 

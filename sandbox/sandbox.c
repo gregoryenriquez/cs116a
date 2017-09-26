@@ -23,9 +23,9 @@
 #define RIGHT_MOUSE_BUTTON 3
 #define DEBUG_PRINT 1
 
-float camera_angle_degrees = -11;
-float camera_position_x = 14, camera_position_y = 7.0f, camera_position_z = -2.0f;
-float center_x = 4, center_y = 2, center_z = 5;
+float camera_angle_degrees = 0;
+// float camera_position_x = 14, camera_position_y = 7.0f, camera_position_z = -2.0f;
+float center_x = 100, center_y = 2, center_z = 1;
 float tea_angle = 0;
 float tea_radians = 0;
 // GLsizei cam_pos_x = 0, cam_pos_y = -8, cam_pos_z = -7;
@@ -65,11 +65,7 @@ void init (void)
   time_t t;
   srand((unsigned) time(&t));
 
-  // glPushMatrix ();
-  // glTranslatef (0, 0, 0);
-  // glColor3f (1.0f, 0.0f, 1.0f);
-  // glBegin(GL_LINES);
-  //   GLsizei x = 0, y = 0, z = 0;
+
   GLsizei z_max = MAX_DEPTH;
   GLsizei x_max = MAX_LENGTH;
   GLsizei y_max = MAX_HEIGHT;
@@ -79,16 +75,6 @@ void init (void)
     }
   }
 
-    // (float) (rand() / 3.0f)
-    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    // glVertex3f((float)(rand() % 3), (float)(rand() % 3), (float)(rand() % 3)); // vertex 1
-    // glVertex3f(-0.5f, -0.25f, 0.0f); // vertex 2
-    // glVertex3f(0.5f, -0.25f, 0.0f); // vertex 3
-    // glVertex3f(1.0f, -1.0f, 0.0f);
-  glEnd();
-  // glutSolidTeapot(sphere_radius);
-  // glutSolidSphere (sphere_radius, 50, 50);
   glPopMatrix ();
   gluLookAt (0, -8, -7, 0, 0, 0, 0.0f, 1.0f, 0.0f); // move camera
 }
@@ -133,20 +119,17 @@ void display (void)
   //   camera_angle_degrees = camera_angle_degrees + 1.0f;
   // }
   camera_angle_radians = camera_angle_degrees * M_PI / 180.0f;
-  // camera_position_x = sin(camera_angle_radians) * 6.0f + 6.0f;
-  
-  // camera_position_x = cam_pos_x;
-  // camera_position_y = cam_pos_y;
-  // camera_position_z = cam_pos_z;
-  // camera_position_y = 0.0f;    
-  // // camera_position_y = -6.0f;
 
 
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity ();
-  GLsizei x = sin(camera_angle_radians) * 50.0f + camera_position_x;
-  GLsizei y = camera_position_y;
-  GLsizei z = camera_position_z;
+  GLsizei x = sin(camera_angle_radians) * 6.0f + center_x;
+  GLsizei y = center_y + 5.0f;
+  GLsizei z = -cos(camera_angle_radians) * 6.0f + center_z;
+  // GLsizei x = sin(camera_angle_radians) * 6.0f - 14.0f + camera_position_x;
+  // GLsizei y = camera_position_y;
+  // GLsizei z = cos(camera_angle_radians) * 6.0f + 2.0f + camera_position_z;
+  // printf("x: %.2f, z: %.2f\n", sin(camera_angle_radians) * 10.0f, cos(camera_angle_radians) * 10.0f);
   gluLookAt ( x, 
               y, 
               z, 
@@ -163,18 +146,26 @@ void display (void)
 
   glPushMatrix ();
   glTranslatef (0, 0, 0);
-  glColor3f (1.0f, 0.0f, 1.0f);
+  glColor3f (1.0f, 0.0f, 0.0f);
 
   // glBegin(GL_LINE_STRIP);  
   glBegin(GL_LINES);
-    for (GLsizei j = 1; j < MAX_DEPTH - 1; j++) {
-        for (GLsizei i = 1; i < MAX_LENGTH - 1; i++) {
+    for (GLsizei j = 0; j < MAX_DEPTH; j++) {
+        for (GLsizei i = 0; i < MAX_LENGTH; i++) {
             glVertex3f(i, terrain[i][j], j);
             glVertex3f(i+1, terrain[i+1][j], j);
+            glColor3f (1.0f, 0.0f, 1.0f);
             glVertex3f(i, terrain[i][j], j);
             glVertex3f(i+1, terrain[i+1][j+1], j+1);
+            glColor3f (0.0f, 0.0f, 1.0f);
             glVertex3f(i, terrain[i][j], j);
             glVertex3f(i, terrain[i][j+1], j+1);
+            glColor3f (1.0f, 0.0f, 0.0f);
+
+            if (i + 1 == MAX_LENGTH && j + 1 < MAX_DEPTH) {
+               glVertex3f(i+1, terrain[i+1][j], j); 
+               glVertex3f(i+1, terrain[i+1][j+1], j+1); 
+            }
         }
     }
 
@@ -246,77 +237,87 @@ void mouse (int mouse_button, int state, int x, int y)
 void keyboard (unsigned char key, int x, int y)
 {
 
-  #if DEBUG_PRINT
-    printCoords();
-  #endif DEBUG_PRINT
-
   switch (key)
   {
     case 27:
       exit (0);
       break;
     case 'w':
-      camera_position_z++;
-      center_z++;
+      // camera_position_z++;
+      if (center_z + 1 < MAX_DEPTH) {
+        center_z++;
+      }
       glutPostRedisplay();
       break;
     case 'a':
-      camera_position_x++;
-      center_x++;
+      // camera_position_x++;
+      if (center_x + 1 < MAX_LENGTH) {
+        center_x++;
+      }
       glutPostRedisplay();
       break;
     case 's':
-      camera_position_z--;
-      center_z--;
+      // camera_position_z--;
+      if (center_z - 1 > 0) {
+        center_z--;
+      }
       glutPostRedisplay();
       break;
     case 'd':
-      camera_position_x--;
-      center_x--;
+      if (center_x - 1 > 0) {
+        center_x--;
+      }
       glutPostRedisplay();
       break;
     default:
     break;
   }
 
+  #if DEBUG_PRINT
+    printCoords();
+  #endif DEBUG_PRINT
+
 }
 
 void arrow_keys (int key, int x, int y)
 {
 
-  #if DEBUG_PRINT
-    printCoords();
-  #endif DEBUG_PRINT
-
   switch (key)
   {
     case GLUT_KEY_UP:
-      camera_position_y++;
+      // camera_position_y++;
       center_y++;
       glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
-      camera_position_y--;
-      center_y--;
+      if (center_y - 1 > 0) {
+        center_y--;
+      }
       glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
-      camera_angle_degrees--;
+      camera_angle_degrees += 15;
       glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
-      camera_angle_degrees++;
+      camera_angle_degrees -= 15;
       glutPostRedisplay();
       break;
     default:
       break;
   }
+
+    #if DEBUG_PRINT
+    printCoords();
+    #endif DEBUG_PRINT
 }
 
 void printCoords() {
-  printf("D/Camera - X: %.2f Y: %.2f Z: %.2f theta: %.2f tea-angle: %.2f Center - X: %.2f Y: %.2f Z: %.2f\n", 
-    camera_position_x, camera_position_y, camera_position_z, camera_angle_degrees, tea_angle, center_x, center_y,
-    center_z); 
+  // printf("D/Camera - X: %.2f Y: %.2f Z: %.2f degrees: %.2f tea-angle: %.2f Center - X: %.2f Y: %.2f Z: %.2f\n", 
+  //   camera_position_x, camera_position_y, camera_position_z, camera_angle_degrees, tea_angle, center_x, center_y,
+  //   center_z); 
+  printf("D/degrees: %.2f tea-angle: %.2f Center - X: %.2f Y: %.2f Z: %.2f\n", camera_angle_degrees, tea_angle, 
+    center_x, center_y, center_z);   
 }
 
 

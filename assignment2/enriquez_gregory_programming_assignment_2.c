@@ -3,6 +3,18 @@
 /*
   Compiled on Mac OSX 
 
+  Controls
+  --------
+  W - Move forward (Z-axis)
+  A - Move backward (Z-axis)
+  S - Move / strafe left (X-axis)
+  D - Move / strafe right (X-axis)
+  Q - Roll teapot left
+  E - Roll teapot right
+  Up - Move upward (Y-axis)
+  Down - Move downward (Y-axis)
+  Left - Rotate camera left 15 degrees
+  Right - Rotate camera right 15 degrees
 */
 
 #ifdef __APPLE__
@@ -14,28 +26,28 @@
 #endif
 #include <math.h>
 #include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 
 #define X_RESOLUTION 640 
 #define Y_RESOLUTION 480
-#define LEFT_MOUSE_BUTTON 1
-#define MIDDLE_MOUSE_BUTTON 2
-#define RIGHT_MOUSE_BUTTON 3
-#define DEBUG_PRINT 1
+#define DEBUG_PRINT 0
+
+const GLsizei MAX_LENGTH = 100;
+const GLsizei MAX_HEIGHT = 10;
+const GLsizei MAX_DEPTH = 100;
 
 float camera_angle_degrees = 0;
-// float camera_position_x = 14, camera_position_y = 7.0f, camera_position_z = -2.0f;
-float center_x = 100, center_y = 2, center_z = 1;
+float center_x = 50, center_y = 2, center_z = 1;
 float tea_angle = 0;
 float tea_radians = 0;
-// GLsizei cam_pos_x = 0, cam_pos_y = -8, cam_pos_z = -7;
-GLsizei light_pos_x = 0, light_pos_y = 0, light_pos_z = 0;
-GLsizei cir_offset = 0;
-GLsizei speed = 5;
-const GLsizei MAX_LENGTH = 100;
-const GLsizei MAX_HEIGHT = 2;
-const GLsizei MAX_DEPTH = 100;
-GLsizei terrain[MAX_LENGTH][MAX_DEPTH];
+float terrain[MAX_LENGTH][MAX_DEPTH];
+float roll_degrees = 0;
+float roll_right = 1;
+float sphere_radius;
+float camera_angle_radians = 0;
+GLsizei barrel = 0;
 
 void printCoords();
 
@@ -65,37 +77,18 @@ void init (void)
   time_t t;
   srand((unsigned) time(&t));
 
-
+  /* Generate random heights for terrain vertices */
   for (GLsizei i = 0; i < MAX_LENGTH; i++) {
     for (GLsizei j = 0; j < MAX_DEPTH; j++) {
-      terrain[i][j] = rand() % MAX_HEIGHT;
+      terrain[i][j] = 0.1f * (rand() % MAX_HEIGHT);
     }
   }
-
-  glPopMatrix ();
-  gluLookAt (0, -8, -7, 0, 0, 0, 0.0f, 1.0f, 0.0f); // move camera
 }
 
 
 void display (void)
 {
-  float sphere_radius;
-  float red_sphere_position_x, red_sphere_position_y, red_sphere_position_z;
-  float green_sphere_position_x, green_sphere_position_y, green_sphere_position_z;
-  float blue_sphere_position_x, blue_sphere_position_y, blue_sphere_position_z;
-
-  float camera_angle_radians = 0;
-
   sphere_radius = 1.0;
-  red_sphere_position_y = -6.0f;
-  green_sphere_position_y = -6.0f;
-  blue_sphere_position_y = -6.0f;
-  red_sphere_position_x = 6.0f;
-  red_sphere_position_z = -3.25f;
-  green_sphere_position_x = 5.0f;
-  green_sphere_position_z = -5.0f;
-  blue_sphere_position_x = 7.0f;
-  blue_sphere_position_z = -5.0f;
 
   if (tea_angle >= 360.0f) {
     tea_angle = 0;
@@ -104,26 +97,20 @@ void display (void)
   }
   tea_radians = tea_angle * M_PI / 180.0f;
 
-
   if (camera_angle_degrees >= 360.0f)
   {
     camera_angle_degrees = 0;
   }
-
   camera_angle_radians = camera_angle_degrees * M_PI / 180.0f;
 
 
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity ();
-  GLsizei x = sin(camera_angle_radians) * 6.0f + center_x;
-  GLsizei y = center_y + 5.0f;
-  GLsizei z = -cos(camera_angle_radians) * 6.0f + center_z;
 
-  gluLookAt ( x, 
-              y, 
-              z, 
+  gluLookAt ( sin(camera_angle_radians) * 6.0f + center_x, 
+              center_y + 3.0f, 
+              -cos(camera_angle_radians) * 6.0f + center_z, 
               center_x, center_y, center_z, 0.0f, 1.0f, 0.0f
-
               ); // move camera
 
   glPushMatrix ();
@@ -155,30 +142,37 @@ void display (void)
 
   glPushMatrix ();
   glTranslatef (center_x, center_y, center_z);
-  glRotatef(tea_angle, 0, 1, 0);
+
+  /* Do a barrel roll! */
+  if (barrel) {
+    if (roll_degrees >= 360.0f || roll_degrees <= -360.0f) {
+      barrel = 0;
+      roll_degrees = 0;
+    } else {
+      if (roll_right) {
+        roll_degrees = roll_degrees + 5.0f;
+        glRotatef(roll_degrees, 0, 0, 1);  
+      } else {
+        roll_degrees = roll_degrees - 5.0f;
+        glRotatef(roll_degrees, 0, 0, 1);  
+      }
+    }
+  } else {
+    glRotatef(tea_angle, 0, 1, 0);
+  }
+
   glTranslatef (0, 0, 0);
   glColor3f (0.0f, 1.0f, 0.0f);
   glutSolidTeapot(sphere_radius);
   glPopMatrix ();
 
-  glPushMatrix ();
-  glTranslatef (0, 0, 0);
-  glColor3f (0.0f, 0.0f, 1.0f);
-  glutSolidTeapot(sphere_radius);
-  // glutSolidSphere (sphere_radius, 50, 50);
-  glPopMatrix ();
 
-  // GLfloat lightPos1[4]     = {camera_position_x, camera_position_y, camera_position_z, 0.0};
-  GLfloat lightPos1[4]     = {light_pos_x, light_pos_y, light_pos_z, 0.0};
+  GLfloat lightPos1[4] = {0, 0, 0, 0.0}; 
   glLightfv (GL_LIGHT1,GL_POSITION, (GLfloat *) &lightPos1);
 
   glutSwapBuffers();
   glutPostRedisplay();
 }
-
-
-
-
 
 void reshape (int w, int h)  
 {
@@ -197,12 +191,6 @@ void reshape (int w, int h)
   glLoadIdentity (); 
 }
 
-void mouse (int mouse_button, int state, int x, int y)
-{
-
-}
-
-
 void keyboard (unsigned char key, int x, int y)
 {
 
@@ -215,25 +203,33 @@ void keyboard (unsigned char key, int x, int y)
       if (center_z + 1 < MAX_DEPTH) {
         center_z++;
       }
-      glutPostRedisplay();
       break;
     case 'a':
       if (center_x + 1 < MAX_LENGTH) {
         center_x++;
       }
-      glutPostRedisplay();
       break;
     case 's':
       if (center_z - 1 > 0) {
         center_z--;
       }
-      glutPostRedisplay();
       break;
     case 'd':
       if (center_x - 1 > 0) {
         center_x--;
       }
-      glutPostRedisplay();
+      break;
+    case 'e':
+      if (!barrel) {
+        barrel = barrel + 1;
+        roll_right = 1;
+      }
+      break;
+    case 'q':
+      if (!barrel) {
+        barrel = barrel - 1;
+        roll_right = 0;        
+      }
       break;
     default:
     break;
@@ -241,7 +237,7 @@ void keyboard (unsigned char key, int x, int y)
 
   #if DEBUG_PRINT
     printCoords();
-  #endif DEBUG_PRINT
+  #endif 
 
 }
 
@@ -254,21 +250,17 @@ void arrow_keys (int key, int x, int y)
       if (center_y < 100) {
         center_y++;
       }
-      glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
       if (center_y - 1 > 0) {
         center_y--;
       }
-      glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
       camera_angle_degrees += 15;
-      glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
       camera_angle_degrees -= 15;
-      glutPostRedisplay();
       break;
     default:
       break;
@@ -276,7 +268,7 @@ void arrow_keys (int key, int x, int y)
 
     #if DEBUG_PRINT
     printCoords();
-    #endif DEBUG_PRINT
+    #endif 
 }
 
 void printCoords() {
@@ -297,7 +289,6 @@ int main (int argc, char *argv[])
   init ();
   glutDisplayFunc (display);  
   glutReshapeFunc (reshape);
-  glutMouseFunc (mouse);
   glutKeyboardFunc (keyboard);
   glutSpecialFunc (arrow_keys);
   glutMainLoop ();

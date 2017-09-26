@@ -3,7 +3,7 @@
 /*
   Compiled on Mac OSX 
 
-  Controls
+  Control Mode 1 - WASD movement
   --------
   W - Move forward (Z-axis)
   A - Move backward (Z-axis)
@@ -15,6 +15,19 @@
   Down - Move downward (Y-axis)
   Left - Rotate camera left 15 degrees
   Right - Rotate camera right 15 degrees
+
+  Control Mode 2 - Arrow movement
+  --------------
+  Up - Move forward (Z-axis)
+  Down - Move backward (Z-axis)
+  Left - Move / strafe left (X-axis)
+  Right - Move / strafe right (X-axis)
+  Q - Roll teapot left
+  E - Roll teapot right
+  A - Move upward (Y-axis)
+  Z - Move downward (Y-axis)
+  S - Rotate camera left 15 degrees
+  D - Rotate camera right 15 degrees
 */
 
 #ifdef __APPLE__
@@ -33,6 +46,7 @@
 #define X_RESOLUTION 640 
 #define Y_RESOLUTION 480
 #define DEBUG_PRINT 0
+#define CONTROL_MODE 2
 
 const GLsizei MAX_LENGTH = 100;
 const GLsizei MAX_HEIGHT = 10;
@@ -194,6 +208,7 @@ void reshape (int w, int h)
 void keyboard (unsigned char key, int x, int y)
 {
 
+  #if CONTROL_MODE==1
   switch (key)
   {
     case 27:
@@ -234,6 +249,46 @@ void keyboard (unsigned char key, int x, int y)
     default:
     break;
   }
+  #endif
+
+  #if CONTROL_MODE==2
+  switch (key)
+  {
+    case 27:
+      exit (0);
+      break;
+    case 'a':
+      if (center_y < 100) {
+        center_y++;
+      }
+      break;
+    case 'z':
+      if (center_y - 1 > 0) {
+        center_y--;
+      }
+      break;
+    case 's':
+      camera_angle_degrees += 15;
+      break;
+    case 'd':
+      camera_angle_degrees -= 15;
+      break;
+    case 'e':
+      if (!barrel) {
+        barrel = barrel + 1;
+        roll_right = 1;
+      }
+      break;
+    case 'q':
+      if (!barrel) {
+        barrel = barrel - 1;
+        roll_right = 0;        
+      }
+      break;
+    default:
+    break;
+  }
+  #endif
 
   #if DEBUG_PRINT
     printCoords();
@@ -244,6 +299,7 @@ void keyboard (unsigned char key, int x, int y)
 void arrow_keys (int key, int x, int y)
 {
 
+  #if CONTROL_MODE==1
   switch (key)
   {
     case GLUT_KEY_UP:
@@ -265,6 +321,36 @@ void arrow_keys (int key, int x, int y)
     default:
       break;
   }
+  #endif
+
+  #if CONTROL_MODE==2
+  switch (key)
+  {
+    case GLUT_KEY_UP:
+      if (center_z + 1 < MAX_DEPTH) {
+        center_z++;
+      }
+      break;
+    case GLUT_KEY_DOWN:
+      if (center_z - 1 > 0) {
+        center_z--;
+      }
+
+      break;
+    case GLUT_KEY_LEFT:
+      if (center_x + 1 < MAX_LENGTH) {
+        center_x++;
+      }
+      break;
+    case GLUT_KEY_RIGHT:
+      if (center_x - 1 > 0) {
+        center_x--;
+      }
+      break;
+    default:
+      break;
+  }
+  #endif
 
     #if DEBUG_PRINT
     printCoords();

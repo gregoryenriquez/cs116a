@@ -1,7 +1,10 @@
 /* Gregory Enriquez */
 
+#define CONTROL_MODE 2 // 1 - WASD controls, 2 - Keyboard arrow controls
+
 /*
-  Compiled on Mac OSX 
+  Compiled on Mac OSX
+  gcc -Wno-deprecated-declarations  -o enriquez_gregory_programming_assignment_2  enriquez_gregory_programming_assignment_2.o  -framework GLUT -framework OpenGL -framework Cocoa -lm
 
   Control Mode 1 - WASD movement
   --------
@@ -46,7 +49,6 @@
 #define X_RESOLUTION 640 
 #define Y_RESOLUTION 480
 #define DEBUG_PRINT 0
-#define CONTROL_MODE 2
 
 const GLsizei MAX_LENGTH = 100;
 const GLsizei MAX_HEIGHT = 10;
